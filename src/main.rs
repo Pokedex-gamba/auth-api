@@ -11,9 +11,12 @@ use utoipauto::utoipauto;
 mod docs;
 mod empty_error;
 mod json_error;
+mod jwt_stuff;
 mod macros;
 mod paths;
 mod util;
+
+static mut IS_DEBUG_ON: bool = false;
 
 async fn default_handler_debug(req: actix_web::HttpRequest) -> impl actix_web::Responder {
     actix_web::HttpResponse::NotFound().body(format!("{:#?}", req))
@@ -39,6 +42,9 @@ async fn main() -> std::io::Result<()> {
     let is_debug_on = std::env::var("DEBUG")
         .map(|val| val == "1")
         .unwrap_or_default();
+    unsafe {
+        IS_DEBUG_ON = is_debug_on;
+    }
     tracing::info!(
         "Debug is {}",
         if is_debug_on { "enabled" } else { "disabled" }
@@ -47,6 +53,8 @@ async fn main() -> std::io::Result<()> {
     let bind_address = std::env::var("ADDRESS").unwrap_or("0.0.0.0:80".into());
 
     HttpServer::new(move || {
+        let token_utils = jwt_stuff::TokenUtils::init();
+
         let json_config = JsonConfig::default().error_handler(if is_debug_on {
             json_error::config_json_error_handler
         } else {
@@ -58,6 +66,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(Logger::default())
             .wrap(Compress::default())
             .app_data(json_config)
+            .app_data(Data::new(token_utils));
         if is_debug_on {
             app = app.service(Scalar::with_url("/docs", ApiDoc::openapi()));
         }
