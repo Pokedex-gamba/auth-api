@@ -11,6 +11,7 @@ use utoipauto::utoipauto;
 mod docs;
 mod empty_error;
 mod json_error;
+mod macros;
 mod paths;
 
 async fn default_handler_debug(req: actix_web::HttpRequest) -> impl actix_web::Responder {
