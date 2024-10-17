@@ -1,9 +1,13 @@
+use actix_jwt_middleware::JwtMiddleware;
 use actix_web::{
+    http::StatusCode,
     middleware::{Compress, Logger, NormalizePath, TrailingSlash},
     web::{self, Data, JsonConfig},
     App, HttpServer,
 };
 use docs::AutoTagAddon;
+use empty_error::EmptyError;
+use json_error::JsonError;
 use utoipa::OpenApi;
 use utoipa_scalar::{Scalar, Servable};
 use utoipauto::utoipauto;
@@ -75,6 +79,19 @@ async fn main() -> std::io::Result<()> {
         empty_error::config_empty_error_handler
     });
 
+    let jwt_error_handler = move |error: actix_jwt_middleware::JwtDecodeErrors| {
+        let code = StatusCode::BAD_REQUEST;
+        if is_debug_on {
+            JsonError::new(error.to_error_string(), code).into()
+        } else {
+            EmptyError::new(code).into()
+        }
+    };
+
+    let jwt_public_token_middleware =
+        JwtMiddleware::<jwt_stuff::PublicTokenData>::new(public_token_decoding_key, validation)
+            .error_handler(jwt_error_handler);
+
     HttpServer::new(move || {
         let mut app = App::new()
             .wrap(NormalizePath::new(TrailingSlash::Trim))
@@ -86,7 +103,11 @@ async fn main() -> std::io::Result<()> {
             app = app.service(Scalar::with_url("/docs", ApiDoc::openapi()));
         }
         app.configure(paths::configure_public)
-            .configure(paths::configure_public_token_jwt)
+            .service(
+                web::scope("")
+                    .wrap(jwt_public_token_middleware.clone())
+                    .configure(paths::configure_public_token_jwt),
+            )
             .default_service(if is_debug_on {
                 web::to(default_handler_debug)
             } else {

@@ -19,3 +19,4 @@ utoipa = { git = "https://github.com/HANDZCZ/utoipa.git", rev = "f83cec4", featu
 utoipa-scalar = { git = "https://github.com/HANDZCZ/utoipa.git", rev = "f83cec4", features = ["actix-web"] }
 utoipauto = { git = "https://github.com/ProbablyClem/utoipauto.git", rev = "b7d8525" }
 uuid = { version = "1.11.0", features = ["v4", "serde"] }
+actix-jwt-middleware ={ git = "https://github.com/HANDZCZ/actix-jwt-middleware.git", rev = "cb89475"}
