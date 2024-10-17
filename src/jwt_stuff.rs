@@ -1,11 +1,11 @@
 use std::collections::HashSet;
 
-use jsonwebtoken::{DecodingKey, EncodingKey, Validation};
+use jsonwebtoken::{DecodingKey, EncodingKey};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Serialize)]
-pub struct GrantsData {
+pub struct GrantsTokenData {
     pub user_id: Uuid,
     pub grants: HashSet<String>,
 }
@@ -90,17 +90,15 @@ pub fn get_keys() -> Keys {
 }
 
 pub struct TokenUtils {
-    pub keys: Keys,
-    pub validation: Validation,
+    grants_encoding_key: EncodingKey,
+    public_token_encoding_key: EncodingKey,
 }
 
 impl TokenUtils {
-    pub fn init() -> Self {
-        let keys = get_keys();
-
-        let mut validation = Validation::new(jsonwebtoken::Algorithm::RS256);
-        validation.set_required_spec_claims(&["exp", "nbf"]);
-
-        Self { keys, validation }
+    pub fn new(grants_encoding_key: EncodingKey, public_token_encoding_key: EncodingKey) -> Self {
+        Self {
+            grants_encoding_key,
+            public_token_encoding_key,
+        }
     }
 }

@@ -52,21 +52,36 @@ async fn main() -> std::io::Result<()> {
 
     let bind_address = std::env::var("ADDRESS").unwrap_or("0.0.0.0:80".into());
 
+    let jwt_stuff::Keys {
+        grants_encoding_key,
+        public_token_keys:
+            jwt_stuff::KeyPair {
+                decoding_key: public_token_decoding_key,
+                encoding_key: public_token_encoding_key,
+            },
+    } = jwt_stuff::get_keys();
+
+    let token_utils = Data::new(jwt_stuff::TokenUtils::new(
+        grants_encoding_key,
+        public_token_encoding_key,
+    ));
+
+    let mut validation = jsonwebtoken::Validation::new(jsonwebtoken::Algorithm::RS256);
+    validation.set_required_spec_claims(&["exp", "nbf"]);
+
+    let json_config = JsonConfig::default().error_handler(if is_debug_on {
+        json_error::config_json_error_handler
+    } else {
+        empty_error::config_empty_error_handler
+    });
+
     HttpServer::new(move || {
-        let token_utils = jwt_stuff::TokenUtils::init();
-
-        let json_config = JsonConfig::default().error_handler(if is_debug_on {
-            json_error::config_json_error_handler
-        } else {
-            empty_error::config_empty_error_handler
-        });
-
         let mut app = App::new()
             .wrap(NormalizePath::new(TrailingSlash::Trim))
             .wrap(Logger::default())
             .wrap(Compress::default())
-            .app_data(json_config)
-            .app_data(Data::new(token_utils));
+            .app_data(json_config.clone())
+            .app_data(token_utils.clone());
         if is_debug_on {
             app = app.service(Scalar::with_url("/docs", ApiDoc::openapi()));
         }
