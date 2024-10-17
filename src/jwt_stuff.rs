@@ -1,8 +1,11 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, future::Future, pin::Pin};
 
+use actix_web::{http::StatusCode, Error, FromRequest, HttpMessage};
 use jsonwebtoken::{DecodingKey, EncodingKey};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+
+use crate::util::get_actix_error;
 
 #[derive(Serialize)]
 pub struct GrantsTokenData {
@@ -10,9 +13,30 @@ pub struct GrantsTokenData {
     pub grants: HashSet<String>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct PublicTokenData {
     pub user_id: Uuid,
+}
+
+impl FromRequest for PublicTokenData {
+    type Error = Error;
+
+    type Future = Pin<Box<dyn Future<Output = Result<Self, Self::Error>>>>;
+
+    fn from_request(
+        req: &actix_web::HttpRequest,
+        _payload: &mut actix_web::dev::Payload,
+    ) -> Self::Future {
+        let data = req
+            .extensions()
+            .get::<PublicTokenData>()
+            .cloned()
+            .ok_or_else(|| {
+                get_actix_error("Authorization header is missing", StatusCode::UNAUTHORIZED)
+            });
+
+        Box::pin(async move { data })
+    }
 }
 
 pub struct KeyPair {
