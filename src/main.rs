@@ -18,6 +18,7 @@ mod hash_utils;
 mod json_error;
 mod jwt_stuff;
 mod macros;
+mod models;
 mod paths;
 mod util;
 
