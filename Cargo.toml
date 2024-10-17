@@ -21,3 +21,5 @@ utoipa-scalar = { git = "https://github.com/HANDZCZ/utoipa.git", rev = "f83cec4"
 utoipauto = { git = "https://github.com/ProbablyClem/utoipauto.git", rev = "b7d8525" }
 uuid = { version = "1.11.0", features = ["v4", "serde"] }
 actix-jwt-middleware ={ git = "https://github.com/HANDZCZ/actix-jwt-middleware.git", rev = "cb89475"}
+garde-actix-web = "0.10.0"
+garde = { version = "0.20.0", features = ["derive", "email"] }
