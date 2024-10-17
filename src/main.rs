@@ -14,6 +14,7 @@ use utoipauto::utoipauto;
 
 mod docs;
 mod empty_error;
+mod hash_utils;
 mod json_error;
 mod jwt_stuff;
 mod macros;

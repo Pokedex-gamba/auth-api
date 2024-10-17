@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 actix-web = "4.9.0"
+argon2rs = "0.2.5"
 jsonwebtoken = "9.3.0"
 paste = "1.0.15"
 rand = "0.8.5"
