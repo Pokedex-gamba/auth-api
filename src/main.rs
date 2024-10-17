@@ -2,7 +2,7 @@ use actix_jwt_middleware::JwtMiddleware;
 use actix_web::{
     http::StatusCode,
     middleware::{Compress, Logger, NormalizePath, TrailingSlash},
-    web::{self, Data, JsonConfig},
+    web::{self, Data},
     App, HttpServer,
 };
 use docs::AutoTagAddon;
@@ -75,11 +75,18 @@ async fn main() -> std::io::Result<()> {
     let mut validation = jsonwebtoken::Validation::new(jsonwebtoken::Algorithm::RS256);
     validation.set_required_spec_claims(&["exp", "nbf"]);
 
-    let json_config = JsonConfig::default().error_handler(if is_debug_on {
+    let actix_json_config = actix_web::web::JsonConfig::default().error_handler(if is_debug_on {
         json_error::config_json_error_handler
     } else {
         empty_error::config_empty_error_handler
     });
+
+    let grade_json_config =
+        garde_actix_web::web::JsonConfig::default().error_handler(if is_debug_on {
+            json_error::config_json_error_handler
+        } else {
+            empty_error::config_empty_error_handler
+        });
 
     let jwt_error_handler = move |error: actix_jwt_middleware::JwtDecodeErrors| {
         let code = StatusCode::BAD_REQUEST;
@@ -99,7 +106,8 @@ async fn main() -> std::io::Result<()> {
             .wrap(NormalizePath::new(TrailingSlash::Trim))
             .wrap(Logger::default())
             .wrap(Compress::default())
-            .app_data(json_config.clone())
+            .app_data(actix_json_config.clone())
+            .app_data(grade_json_config.clone())
             .app_data(token_utils.clone());
         if is_debug_on {
             app = app.service(Scalar::with_url("/docs", ApiDoc::openapi()));
