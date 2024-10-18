@@ -140,7 +140,10 @@ async fn main() -> std::io::Result<()> {
         public_token_decoding_key,
         validation.clone(),
     )
-    .error_handler(jwt_error_handler);
+    .error_handler(jwt_error_handler)
+    .success_handler(|req, jwt_stuff::PublicTokenData { user_id }| {
+        req.extensions_mut().insert(jwt_stuff::UserId::new(user_id));
+    });
 
     let grants_string_error_config = GrantErrorConfig::<String>::default()
             .error_handler(move |condition, grants| {
