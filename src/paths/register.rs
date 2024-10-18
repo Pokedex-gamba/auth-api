@@ -11,6 +11,18 @@ use crate::models::register_data::RegisterData;
 use crate::models::token::Token;
 use crate::util::response_from_error;
 
+#[utoipa::path(
+    context_path = "/auth",
+    request_body = RegisterData,
+    responses(
+        (status = 200, description = "Returns valid public token", body = Token),
+        (status = 400, description = "Register request violates unique constraints<br>or<br>Some unhandled db error"),
+        (status = 500, description = "Failed to fetch/parse data from db"),
+    ),
+    security(
+        ("jwt_grants" = ["svc::auth_api::route::/auth/register"]),
+    )
+)]
 #[actix_web_grants::protect("svc::auth_api::route::/auth/register")]
 #[post("/register")]
 pub async fn register(
