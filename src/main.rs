@@ -163,7 +163,9 @@ async fn main() -> std::io::Result<()> {
                     .insert(actix_web_grants::authorities::AuthDetails {
                         authorities: Arc::new(grants),
                     });
-                req.extensions_mut().insert(jwt_stuff::UserId::new(user_id));
+                if let Some(user_id) = user_id {
+                    req.extensions_mut().insert(jwt_stuff::UserId::new(user_id));
+                }
             });
 
     HttpServer::new(move || {
