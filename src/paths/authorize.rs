@@ -20,6 +20,18 @@ struct Row {
     all_grants: Json<HashSet<String>>,
 }
 
+#[utoipa::path(
+    context_path = "/token",
+    responses(
+        (status = 200, description = "Returns valid grants token in body and authorization header", body = Token),
+        (status = 400, description = "Some unhandled db error"),
+        (status = 404, description = "User doesn't exists"),
+        (status = 500, description = "Failed to fetch/parse data from db"),
+    ),
+    security(
+        ("jwt_public_token" = []),
+    )
+)]
 #[post("/authorize")]
 pub async fn authorize(
     user_id: Option<UserId>,
