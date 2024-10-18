@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "select all_grants as \"all_grants!: Json<HashSet<String>>\" from grants_with_subgrants where id = (select \"grant\" from users where id = $1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "all_grants!: Json<HashSet<String>>",
+        "type_info": "Json"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "652b19080e7efe014daacc9f277ffa831ba32e7816aa5339e412d26cbb5e4395"
+}

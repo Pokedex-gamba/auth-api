@@ -1,0 +1,20 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "select all_grants as \"all_grants!: Json<HashSet<String>>\" from grants_with_subgrants where id = (select id from grants where name = 'role::public')",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "all_grants!: Json<HashSet<String>>",
+        "type_info": "Json"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "1169d210f4e503e319eab9087d7b1805bf4881174bc3c6fdaffe8a0172fb4572"
+}
