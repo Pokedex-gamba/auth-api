@@ -45,7 +45,7 @@ pub struct KeyPair {
 }
 
 pub struct Keys {
-    pub grants_encoding_key: EncodingKey,
+    pub grants_token_keys: KeyPair,
     pub public_token_keys: KeyPair,
 }
 
@@ -84,6 +84,13 @@ pub fn get_keys() -> Keys {
         }};
     }
 
+    let grants_decoding_key = get_key!(
+        "GRANTS_DECODING_KEY",
+        "grants decoding",
+        "./grants_decoding_key",
+        DecodingKey
+    );
+
     let grants_encoding_key = get_key!(
         "GRANTS_ENCODING_KEY",
         "grants encoding",
@@ -105,7 +112,10 @@ pub fn get_keys() -> Keys {
     );
 
     Keys {
-        grants_encoding_key,
+        grants_token_keys: KeyPair {
+            encoding_key: grants_encoding_key,
+            decoding_key: grants_decoding_key,
+        },
         public_token_keys: KeyPair {
             decoding_key: public_token_decoding_key,
             encoding_key: public_token_encoding_key,
