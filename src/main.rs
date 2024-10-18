@@ -8,7 +8,7 @@ use actix_web::{
     App, HttpMessage, HttpServer,
 };
 use actix_web_grants::{GrantErrorConfig, GrantsConfig};
-use docs::AutoTagAddon;
+use docs::{AutoTagAddon, JwtGrantsAddon, JwtPublicTokenAddon};
 use util::{get_actix_error, get_config_error_handler};
 use utoipa::OpenApi;
 use utoipa_scalar::{Scalar, Servable};
@@ -41,9 +41,9 @@ async fn main() -> std::io::Result<()> {
     #[derive(OpenApi)]
     #[openapi(
         info(
-            title = "Pokemon API"
+            title = "Auth API"
         ),
-        modifiers(&AutoTagAddon)
+        modifiers(&JwtGrantsAddon, &JwtPublicTokenAddon, &AutoTagAddon)
     )]
     struct ApiDoc;
 
