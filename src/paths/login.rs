@@ -14,6 +14,19 @@ use crate::{
     util::response_from_error,
 };
 
+#[utoipa::path(
+    context_path = "/auth",
+    request_body = LoginData,
+    responses(
+        (status = 200, description = "Returns valid public token", body = Token),
+        (status = 400, description = "Wrong password for user<br>or<br>Some unhandled db error"),
+        (status = 404, description = "User doesn't exists"),
+        (status = 500, description = "Failed to fetch/parse data from db"),
+    ),
+    security(
+        ("jwt_grants" = ["svc::auth_api::route::/auth/login"]),
+    )
+)]
 #[actix_web_grants::protect("svc::auth_api::route::/auth/login")]
 #[post("/login")]
 pub async fn login(
