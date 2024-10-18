@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 use crate::util::get_actix_error;
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct GrantsTokenData {
     pub user_id: Uuid,
     pub grants: HashSet<String>,
