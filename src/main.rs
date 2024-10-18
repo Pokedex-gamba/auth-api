@@ -73,6 +73,22 @@ async fn main() -> std::io::Result<()> {
             },
     } = jwt_stuff::get_keys();
 
+    let Ok(database_url) = std::env::var("DATABASE_URL") else {
+        tracing::error!("Database url environmental variable is not set",);
+        tracing::info!("Fatal error encountered halting!");
+        std::thread::park();
+        panic!();
+    };
+    let pool = Data::new(
+        sqlx::postgres::PgPoolOptions::new()
+            .connect(&database_url)
+            .await
+            .unwrap_or_else(|e| {
+                tracing::error!("Error encounterder when connecting to database: {e}");
+                panic!();
+            }),
+    );
+
     let token_utils = Data::new(jwt_stuff::TokenUtils::new(
         grants_encoding_key,
         public_token_encoding_key,
@@ -130,7 +146,8 @@ async fn main() -> std::io::Result<()> {
             .app_data(grants_config.clone())
             .app_data(actix_json_config.clone())
             .app_data(grade_json_config.clone())
-            .app_data(token_utils.clone());
+            .app_data(token_utils.clone())
+            .app_data(pool.clone());
         if is_debug_on {
             app = app.service(Scalar::with_url("/docs", ApiDoc::openapi()));
         }
