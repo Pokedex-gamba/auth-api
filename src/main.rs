@@ -73,6 +73,19 @@ async fn main() -> std::io::Result<()> {
             3600
         });
 
+    let grants_ttl = std::env::var("GRANTS_TOKEN_TTL")
+        .ok()
+        .and_then(|var| {
+            var.parse::<u64>().ok().or_else(|| {
+                tracing::warn!("Invalid grants token ttl using default");
+                None
+            })
+        })
+        .unwrap_or_else(|| {
+            tracing::warn!("Grants token ttl missing using default");
+            15
+        });
+
     let jwt_stuff::Keys {
         grants_token_keys:
             jwt_stuff::KeyPair {
@@ -107,6 +120,7 @@ async fn main() -> std::io::Result<()> {
         grants_encoding_key,
         public_token_encoding_key,
         public_token_ttl,
+        grants_ttl,
     ));
 
     let mut validation = jsonwebtoken::Validation::new(jsonwebtoken::Algorithm::RS256);

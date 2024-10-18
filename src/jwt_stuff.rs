@@ -168,6 +168,7 @@ pub struct TokenUtils {
     grants_encoding_key: EncodingKey,
     public_token_encoding_key: EncodingKey,
     public_token_ttl: u64,
+    grants_ttl: u64,
 }
 
 #[derive(Serialize)]
@@ -184,11 +185,13 @@ impl TokenUtils {
         grants_encoding_key: EncodingKey,
         public_token_encoding_key: EncodingKey,
         public_token_ttl: u64,
+        grants_ttl: u64,
     ) -> Self {
         Self {
             grants_encoding_key,
             public_token_encoding_key,
             public_token_ttl,
+            grants_ttl,
         }
     }
 
@@ -211,5 +214,10 @@ impl TokenUtils {
     pub fn encode_public_token(&self, user_id: Uuid) -> String {
         let data = PublicTokenData { user_id };
         Self::encode_jwt(data, &self.public_token_encoding_key, self.public_token_ttl)
+    }
+
+    pub fn encode_grants(&self, user_id: Uuid, grants: HashSet<String>) -> String {
+        let data = GrantsTokenData { user_id, grants };
+        Self::encode_jwt(data, &self.grants_encoding_key, self.grants_ttl)
     }
 }
