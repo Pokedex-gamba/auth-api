@@ -1,4 +1,10 @@
-use std::{collections::HashSet, future::Future, ops::Deref, pin::Pin};
+use std::{
+    collections::HashSet,
+    future::Future,
+    ops::Deref,
+    pin::Pin,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use actix_web::{http::StatusCode, Error, FromRequest, HttpMessage};
 use jsonwebtoken::{DecodingKey, EncodingKey};
@@ -161,13 +167,49 @@ pub fn get_keys() -> Keys {
 pub struct TokenUtils {
     grants_encoding_key: EncodingKey,
     public_token_encoding_key: EncodingKey,
+    public_token_ttl: u64,
+}
+
+#[derive(Serialize)]
+pub struct Claims<T> {
+    exp: u64,
+    iat: u64,
+    nbf: u64,
+    #[serde(flatten)]
+    data: T,
 }
 
 impl TokenUtils {
-    pub fn new(grants_encoding_key: EncodingKey, public_token_encoding_key: EncodingKey) -> Self {
+    pub fn new(
+        grants_encoding_key: EncodingKey,
+        public_token_encoding_key: EncodingKey,
+        public_token_ttl: u64,
+    ) -> Self {
         Self {
             grants_encoding_key,
             public_token_encoding_key,
+            public_token_ttl,
         }
+    }
+
+    fn encode_jwt<T: Serialize>(data: T, encoding_key: &EncodingKey, token_ttl: u64) -> String {
+        let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+        let claims = Claims {
+            exp: now.as_secs() + token_ttl,
+            iat: now.as_secs(),
+            nbf: now.as_secs(),
+            data,
+        };
+        jsonwebtoken::encode(
+            &jsonwebtoken::Header::new(jsonwebtoken::Algorithm::RS256),
+            &claims,
+            encoding_key,
+        )
+        .unwrap()
+    }
+
+    pub fn encode_public_token(&self, user_id: Uuid) -> String {
+        let data = PublicTokenData { user_id };
+        Self::encode_jwt(data, &self.public_token_encoding_key, self.public_token_ttl)
     }
 }
