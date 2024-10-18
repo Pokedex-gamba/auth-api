@@ -186,14 +186,14 @@ async fn main() -> std::io::Result<()> {
             app = app.service(Scalar::with_url("/docs", ApiDoc::openapi()));
         }
         app.service(
-            web::scope("")
-                .wrap(jwt_grants_middleware.clone())
-                .configure(paths::configure_grants_jwt),
-        )
-        .service(
-            web::scope("")
+            web::scope("/token")
                 .wrap(jwt_public_token_middleware.clone())
                 .configure(paths::configure_public_token_jwt),
+        )
+        .service(
+            web::scope("/auth")
+                .wrap(jwt_grants_middleware.clone())
+                .configure(paths::configure_grants_jwt),
         )
         .default_service(if is_debug_on {
             web::to(default_handler_debug)
