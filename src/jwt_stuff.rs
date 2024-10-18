@@ -15,7 +15,7 @@ use crate::util::get_actix_error;
 
 #[derive(Serialize, Deserialize)]
 pub struct GrantsTokenData {
-    pub user_id: Uuid,
+    pub user_id: Option<Uuid>,
     pub grants: HashSet<String>,
 }
 
@@ -47,7 +47,10 @@ impl FromRequest for UserId {
         _payload: &mut actix_web::dev::Payload,
     ) -> Self::Future {
         let data = req.extensions().get::<UserId>().cloned().ok_or_else(|| {
-            get_actix_error("Authorization header is missing", StatusCode::UNAUTHORIZED)
+            get_actix_error(
+                "User id is required for this operation",
+                StatusCode::UNAUTHORIZED,
+            )
         });
 
         Box::pin(async move { data })
@@ -216,7 +219,7 @@ impl TokenUtils {
         Self::encode_jwt(data, &self.public_token_encoding_key, self.public_token_ttl)
     }
 
-    pub fn encode_grants(&self, user_id: Uuid, grants: HashSet<String>) -> String {
+    pub fn encode_grants(&self, user_id: Option<Uuid>, grants: HashSet<String>) -> String {
         let data = GrantsTokenData { user_id, grants };
         Self::encode_jwt(data, &self.grants_encoding_key, self.grants_ttl)
     }
