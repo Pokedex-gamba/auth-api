@@ -1,10 +1,13 @@
+use std::sync::Arc;
+
 use actix_jwt_middleware::JwtMiddleware;
 use actix_web::{
     http::StatusCode,
     middleware::{Compress, Logger, NormalizePath, TrailingSlash},
     web::{self, Data},
-    App, HttpServer,
+    App, HttpMessage, HttpServer,
 };
+use actix_web_grants::{GrantErrorConfig, GrantsConfig};
 use docs::AutoTagAddon;
 use util::{get_actix_error, get_config_error_handler};
 use utoipa::OpenApi;
@@ -88,15 +91,43 @@ async fn main() -> std::io::Result<()> {
         get_actix_error(error.to_error_string(), StatusCode::BAD_REQUEST)
     };
 
-    let jwt_public_token_middleware =
-        JwtMiddleware::<jwt_stuff::PublicTokenData>::new(public_token_decoding_key, validation)
-            .error_handler(jwt_error_handler);
+    let jwt_public_token_middleware = JwtMiddleware::<jwt_stuff::PublicTokenData>::new(
+        public_token_decoding_key,
+        validation.clone(),
+    )
+    .error_handler(jwt_error_handler);
+
+    let grants_string_error_config = GrantErrorConfig::<String>::default()
+            .error_handler(move |condition, grants| {
+                let msg = format!(
+                    "Insufficient permissions. Condition '{}' needs to be fulfilled. Grants provided: {:?}",
+                    condition, grants
+                );
+                get_actix_error(msg, StatusCode::FORBIDDEN).error_response()
+            });
+
+    let grants_config = GrantsConfig::default().missing_auth_details_error_handler(move || {
+        get_actix_error("Authorization header is missing", StatusCode::UNAUTHORIZED)
+    });
+
+    let jwt_grants_middleware =
+        JwtMiddleware::<jwt_stuff::GrantsTokenData>::new(grants_decoding_key, validation)
+            .error_handler(jwt_error_handler)
+            .success_handler(|req, jwt_stuff::GrantsTokenData { grants, user_id }| {
+                req.extensions_mut()
+                    .insert(actix_web_grants::authorities::AuthDetails {
+                        authorities: Arc::new(grants),
+                    });
+                req.extensions_mut().insert(jwt_stuff::UserId::new(user_id));
+            });
 
     HttpServer::new(move || {
         let mut app = App::new()
             .wrap(NormalizePath::new(TrailingSlash::Trim))
             .wrap(Logger::default())
             .wrap(Compress::default())
+            .app_data(grants_string_error_config.clone())
+            .app_data(grants_config.clone())
             .app_data(actix_json_config.clone())
             .app_data(grade_json_config.clone())
             .app_data(token_utils.clone());
