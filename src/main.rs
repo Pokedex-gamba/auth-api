@@ -6,8 +6,7 @@ use actix_web::{
     App, HttpServer,
 };
 use docs::AutoTagAddon;
-use empty_error::EmptyError;
-use json_error::JsonError;
+use util::{get_actix_error, get_config_error_handler};
 use utoipa::OpenApi;
 use utoipa_scalar::{Scalar, Servable};
 use utoipauto::utoipauto;
@@ -79,26 +78,14 @@ async fn main() -> std::io::Result<()> {
     let mut validation = jsonwebtoken::Validation::new(jsonwebtoken::Algorithm::RS256);
     validation.set_required_spec_claims(&["exp", "nbf"]);
 
-    let actix_json_config = actix_web::web::JsonConfig::default().error_handler(if is_debug_on {
-        json_error::config_json_error_handler
-    } else {
-        empty_error::config_empty_error_handler
-    });
+    let actix_json_config =
+        actix_web::web::JsonConfig::default().error_handler(get_config_error_handler());
 
     let grade_json_config =
-        garde_actix_web::web::JsonConfig::default().error_handler(if is_debug_on {
-            json_error::config_json_error_handler
-        } else {
-            empty_error::config_empty_error_handler
-        });
+        garde_actix_web::web::JsonConfig::default().error_handler(get_config_error_handler());
 
     let jwt_error_handler = move |error: actix_jwt_middleware::JwtDecodeErrors| {
-        let code = StatusCode::BAD_REQUEST;
-        if is_debug_on {
-            JsonError::new(error.to_error_string(), code).into()
-        } else {
-            EmptyError::new(code).into()
-        }
+        get_actix_error(error.to_error_string(), StatusCode::BAD_REQUEST)
     };
 
     let jwt_public_token_middleware =
