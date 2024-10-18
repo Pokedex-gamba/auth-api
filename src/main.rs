@@ -59,7 +59,11 @@ async fn main() -> std::io::Result<()> {
     let bind_address = std::env::var("ADDRESS").unwrap_or("0.0.0.0:80".into());
 
     let jwt_stuff::Keys {
-        grants_encoding_key,
+        grants_token_keys:
+            jwt_stuff::KeyPair {
+                decoding_key: grants_decoding_key,
+                encoding_key: grants_encoding_key,
+            },
         public_token_keys:
             jwt_stuff::KeyPair {
                 decoding_key: public_token_decoding_key,
