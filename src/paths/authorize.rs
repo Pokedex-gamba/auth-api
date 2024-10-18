@@ -79,7 +79,7 @@ fn handle_response(
                     "Token with 'user_id: {}' exists, but user no longer exists",
                     *user_id
                 );
-                response_from_error(format!("User doesn't exist"), StatusCode::NOT_FOUND)
+                response_from_error("User doesn't exist".to_string(), StatusCode::NOT_FOUND)
             }
             None => {
                 tracing::warn!("Grant 'role::public' doesn't exists -> guest user doesn't have any permissions");

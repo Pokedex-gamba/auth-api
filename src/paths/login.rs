@@ -57,7 +57,7 @@ pub async fn login(
             }
         }
         Err(sqlx::Error::RowNotFound) => {
-            response_from_error(format!("User doesn't exist"), StatusCode::NOT_FOUND)
+            response_from_error("User doesn't exist".to_string(), StatusCode::NOT_FOUND)
         }
         Err(sqlx::Error::Database(error)) => response_from_error(
             format!("unhandled error - {}", error),
