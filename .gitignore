@@ -1,3 +1,7 @@
 /target
 /Cargo.lock
 /.env
+/grants_decoding_key
+/grants_encoding_key
+/token_decoding_key
+/token_encoding_key
