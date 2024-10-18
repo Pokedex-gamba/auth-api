@@ -134,17 +134,21 @@ async fn main() -> std::io::Result<()> {
         if is_debug_on {
             app = app.service(Scalar::with_url("/docs", ApiDoc::openapi()));
         }
-        app.configure(paths::configure_public)
-            .service(
-                web::scope("")
-                    .wrap(jwt_public_token_middleware.clone())
-                    .configure(paths::configure_public_token_jwt),
-            )
-            .default_service(if is_debug_on {
-                web::to(default_handler_debug)
-            } else {
-                web::to(default_handler)
-            })
+        app.service(
+            web::scope("")
+                .wrap(jwt_grants_middleware.clone())
+                .configure(paths::configure_grants_jwt),
+        )
+        .service(
+            web::scope("")
+                .wrap(jwt_public_token_middleware.clone())
+                .configure(paths::configure_public_token_jwt),
+        )
+        .default_service(if is_debug_on {
+            web::to(default_handler_debug)
+        } else {
+            web::to(default_handler)
+        })
     })
     .bind(bind_address)
     .expect("Failed to bind server to address")
