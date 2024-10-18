@@ -11,6 +11,7 @@ use crate::models::register_data::RegisterData;
 use crate::models::token::Token;
 use crate::util::response_from_error;
 
+#[actix_web_grants::protect("svc::auth_api::route::/auth/register")]
 #[post("/register")]
 pub async fn register(
     data: Json<RegisterData>,

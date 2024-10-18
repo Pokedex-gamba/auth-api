@@ -14,6 +14,7 @@ use crate::{
     util::response_from_error,
 };
 
+#[actix_web_grants::protect("svc::auth_api::route::/auth/login")]
 #[post("/login")]
 pub async fn login(
     data: Json<LoginData>,
