@@ -90,6 +90,38 @@ impl Modify for JwtGrantsAddon {
     }
 }
 
+pub struct JwtPublicTokenAddon;
+
+impl Modify for JwtPublicTokenAddon {
+    fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
+        let components = openapi.components.as_mut().unwrap();
+        components.add_security_scheme(
+            "jwt_public_token",
+            SecurityScheme::Http(Http::new(HttpAuthScheme::Bearer)),
+        );
+
+        for path in openapi.paths.paths.values_mut() {
+            for operation in path.operations.values_mut() {
+                let Some(securities) = &operation.security else {
+                    continue;
+                };
+
+                if securities
+                    .iter()
+                    .any(|security| security.value.contains_key("jwt_public_token"))
+                {
+                    let responses = &mut operation.responses;
+                    append_response(
+                        responses,
+                        "400",
+                        "Malformed authorization header or invalid jwt token",
+                    );
+                }
+            }
+        }
+    }
+}
+
 pub struct AutoTagAddon;
 
 impl Modify for AutoTagAddon {
