@@ -60,6 +60,19 @@ async fn main() -> std::io::Result<()> {
 
     let bind_address = std::env::var("ADDRESS").unwrap_or("0.0.0.0:80".into());
 
+    let public_token_ttl = std::env::var("PUBLIC_TOKEN_TTL")
+        .ok()
+        .and_then(|var| {
+            var.parse::<u64>().ok().or_else(|| {
+                tracing::warn!("Invalid public token ttl using default");
+                None
+            })
+        })
+        .unwrap_or_else(|| {
+            tracing::warn!("Public token ttl missing using default");
+            3600
+        });
+
     let jwt_stuff::Keys {
         grants_token_keys:
             jwt_stuff::KeyPair {
@@ -79,6 +92,7 @@ async fn main() -> std::io::Result<()> {
         std::thread::park();
         panic!();
     };
+
     let pool = Data::new(
         sqlx::postgres::PgPoolOptions::new()
             .connect(&database_url)
@@ -92,6 +106,7 @@ async fn main() -> std::io::Result<()> {
     let token_utils = Data::new(jwt_stuff::TokenUtils::new(
         grants_encoding_key,
         public_token_encoding_key,
+        public_token_ttl,
     ));
 
     let mut validation = jsonwebtoken::Validation::new(jsonwebtoken::Algorithm::RS256);
