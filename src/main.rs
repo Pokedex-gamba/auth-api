@@ -9,7 +9,7 @@ use actix_web::{
 };
 use actix_web_grants::{GrantErrorConfig, GrantsConfig};
 use docs::{AutoTagAddon, JwtGrantsAddon, JwtPublicTokenAddon};
-use util::{get_actix_error, get_config_error_handler};
+use util::{get_actix_error, get_actix_error_with_injected_header, get_config_error_handler};
 use utoipa::OpenApi;
 use utoipa_scalar::{Scalar, Servable};
 use utoipauto::utoipauto;
@@ -134,15 +134,13 @@ async fn main() -> std::io::Result<()> {
     let grade_json_config =
         garde_actix_web::web::JsonConfig::default().error_handler(get_config_error_handler());
 
-    let jwt_error_handler = move |error: actix_jwt_middleware::JwtDecodeErrors| {
-        get_actix_error(error.to_error_string(), StatusCode::BAD_REQUEST)
-    };
-
     let jwt_public_token_middleware = JwtMiddleware::<jwt_stuff::PublicTokenData>::new(
         public_token_decoding_key,
         validation.clone(),
     )
-    .error_handler(jwt_error_handler)
+    .error_handler(|error: actix_jwt_middleware::JwtDecodeErrors| {
+        get_actix_error_with_injected_header(error.to_error_string(), StatusCode::BAD_REQUEST)
+    })
     .success_handler(|req, jwt_stuff::PublicTokenData { user_id }| {
         req.extensions_mut().insert(jwt_stuff::UserId::new(user_id));
     });
@@ -162,7 +160,9 @@ async fn main() -> std::io::Result<()> {
 
     let jwt_grants_middleware =
         JwtMiddleware::<jwt_stuff::GrantsTokenData>::new(grants_decoding_key, validation)
-            .error_handler(jwt_error_handler)
+            .error_handler(|error: actix_jwt_middleware::JwtDecodeErrors| {
+                get_actix_error(error.to_error_string(), StatusCode::BAD_REQUEST)
+            })
             .success_handler(|req, jwt_stuff::GrantsTokenData { grants, user_id }| {
                 req.extensions_mut()
                     .insert(actix_web_grants::authorities::AuthDetails {
