@@ -1,0 +1,20 @@
+version: "3.7"
+
+# For database development only!
+
+services:
+  postgres:
+    image: pokedex-gamba/auth-api-db-dev
+    build: .
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: auth
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: toor
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres-data:
