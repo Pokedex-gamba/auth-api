@@ -1,12 +1,15 @@
 use std::fmt::Debug;
 
-use actix_web::{http::StatusCode, Error, HttpRequest, HttpResponse};
+use actix_web::{
+    http::{header::ContentType, StatusCode},
+    Error, HttpRequest, HttpResponse, HttpResponseBuilder,
+};
 use serde::Serialize;
 
 use crate::{
     empty_error::{self, EmptyError},
     json_error::{self, JsonError},
-    IS_DEBUG_ON,
+    IS_DEBUG_ON, RESPONSE_HEADER,
 };
 
 pub fn response_from_error(
@@ -32,5 +35,25 @@ where
         json_error::config_json_error_handler
     } else {
         empty_error::config_empty_error_handler
+    }
+}
+
+pub fn response_from_error_with_injected_header(
+    error: impl Serialize + Debug + 'static,
+    status_code: StatusCode,
+) -> HttpResponse {
+    get_actix_error_with_injected_header(error, status_code).error_response()
+}
+
+pub fn get_actix_error_with_injected_header(
+    error: impl Serialize + Debug + 'static,
+    status_code: StatusCode,
+) -> Error {
+    if unsafe { IS_DEBUG_ON } {
+        JsonError::new(error, status_code)
+            .inject_into_header()
+            .into()
+    } else {
+        EmptyError::new(status_code).into()
     }
 }
