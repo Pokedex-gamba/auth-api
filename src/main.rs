@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use actix_jwt_middleware::JwtMiddleware;
 use actix_web::{
+    dev::Service,
     http::StatusCode,
     middleware::{Compress, Logger, NormalizePath, TrailingSlash},
     web::{self, Data},
@@ -25,6 +26,7 @@ mod paths;
 mod util;
 
 const RESPONSE_HEADER: &str = "X-Auth-Response";
+const NGINX_HTTP_STATUS_OVERRIDE_HEADER: &str = "X-Nginx-Auth-Request";
 
 static mut IS_DEBUG_ON: bool = false;
 
@@ -190,6 +192,21 @@ async fn main() -> std::io::Result<()> {
         app.service(
             web::scope("/token")
                 .wrap(jwt_public_token_middleware.clone())
+                .wrap_fn(|req, svc| {
+                    let fut = svc.call(req);
+                    async {
+                        let mut res = fut.await?;
+                        if !res.status().is_success()
+                            && res
+                                .request()
+                                .headers()
+                                .contains_key(NGINX_HTTP_STATUS_OVERRIDE_HEADER)
+                        {
+                            *res.response_mut().status_mut() = StatusCode::UNAUTHORIZED;
+                        }
+                        Ok(res)
+                    }
+                })
                 .configure(paths::configure_public_token_jwt),
         )
         .service(
