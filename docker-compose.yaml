@@ -1,0 +1,63 @@
+version: "3.7"
+
+services:
+  auth-api:
+    image: ghcr.io/pokedex-gamba/auth-api:latest-x86_64
+    restart: unless-stopped
+    environment:
+      # enables debug responses and '/docs' endpoint
+      # to disable comment this line or change the value to anything but '1'
+      DEBUG: 1
+
+      # set public token ttl in seconds
+      # default is 3600 seconds (1 hour)
+      PUBLIC_TOKEN_TTL: 3600
+
+      # set grants token ttl in seconds
+      # default is 15 seconds
+      GRANTS_TOKEN_TTL: 15
+
+      # database url for connection to database
+      DATABASE_URL: postgres://root:toor@auth-api-db/auth
+
+      # decoding key for grants or mount it
+      # decoding key must be RS256
+      # GRANTS_DECODING_KEY: ""
+
+      # encoding key for grants or mount it
+      # encoding key must be RS256
+      # GRANTS_ENCODING_KEY: ""
+
+      # decoding key for public token or mount it
+      # decoding key must be RS256
+      # TOKEN_DECODING_KEY: ""
+
+      # encoding key for public token or mount it
+      # encoding key must be RS256
+      # TOKEN_ENCODING_KEY: ""
+    volumes:
+      # mount decoding/encoding keys or set them in environment
+      - ./grants_decoding_key:/grants_decoding_key:ro
+      - ./grants_encoding_key:/grants_encoding_key:ro
+      - ./token_decoding_key:/token_decoding_key:ro
+      - ./token_encoding_key:/token_encoding_key:ro
+    ports:
+      # choose a port at which service will be listening
+      - "9999:80"
+
+  auth-api-db:
+    image: ghcr.io/pokedex-gamba/auth-api-db
+    build: ./database
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: auth
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: toor
+    volumes:
+      - auth-api-db-data:/var/lib/postgresql/data
+    # if you need direct access to db expose port 5432
+    #ports:
+    #  - "5432:5432"
+
+volumes:
+  auth-api-db-data:
