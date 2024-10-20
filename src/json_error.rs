@@ -5,16 +5,29 @@ use actix_web::{
 };
 use serde::Serialize;
 
+use crate::RESPONSE_HEADER;
+
 #[derive(Debug, Serialize)]
 pub struct JsonError<Err> {
     error: Err,
     #[serde(skip)]
     status_code: StatusCode,
+    #[serde(skip)]
+    inject_into_header: bool,
 }
 
 impl<Err> JsonError<Err> {
     pub fn new(error: Err, status_code: StatusCode) -> Self {
-        Self { error, status_code }
+        Self {
+            error,
+            status_code,
+            inject_into_header: false,
+        }
+    }
+
+    pub fn inject_into_header(mut self) -> Self {
+        self.inject_into_header = true;
+        self
     }
 }
 
@@ -32,6 +45,7 @@ impl From<&dyn actix_web::ResponseError> for JsonError<String> {
         Self {
             status_code: value.status_code(),
             error: value.to_string(),
+            inject_into_header: false,
         }
     }
 }
@@ -42,7 +56,10 @@ impl<Err: Serialize + Debug> ResponseError for JsonError<Err> {
     }
 
     fn error_response(&self) -> HttpResponse<BoxBody> {
-        HttpResponseBuilder::new(self.status_code).json(self)
+        let body = serde_json::to_string(&self).unwrap();
+        HttpResponseBuilder::new(self.status_code)
+            .insert_header((RESPONSE_HEADER, body.as_str()))
+            .body(body)
     }
 }
 

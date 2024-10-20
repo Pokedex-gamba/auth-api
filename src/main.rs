@@ -24,6 +24,8 @@ mod models;
 mod paths;
 mod util;
 
+const RESPONSE_HEADER: &str = "X-Auth-Response";
+
 static mut IS_DEBUG_ON: bool = false;
 
 async fn default_handler_debug(req: actix_web::HttpRequest) -> impl actix_web::Responder {
