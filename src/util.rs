@@ -1,15 +1,12 @@
 use std::fmt::Debug;
 
-use actix_web::{
-    http::{header::ContentType, StatusCode},
-    Error, HttpRequest, HttpResponse, HttpResponseBuilder,
-};
+use actix_web::{http::StatusCode, Error, HttpRequest, HttpResponse};
 use serde::Serialize;
 
 use crate::{
     empty_error::{self, EmptyError},
     json_error::{self, JsonError},
-    IS_DEBUG_ON, RESPONSE_HEADER,
+    IS_DEBUG_ON,
 };
 
 pub fn response_from_error(
