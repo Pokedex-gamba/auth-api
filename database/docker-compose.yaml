@@ -4,7 +4,7 @@ version: "3.7"
 
 services:
   postgres:
-    image: pokedex-gamba/auth-api-db-dev
+    image: ghcr.io/pokedex-gamba/auth-api-db-dev
     build: .
     restart: unless-stopped
     environment:
