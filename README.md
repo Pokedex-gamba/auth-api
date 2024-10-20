@@ -53,7 +53,7 @@ docker compose up -d
 First you need to register or login to get your public token.\
 You then put this token into your `Authorization` header (in bearer format) and use this public token to make all your requests.
 
-For user that has all grants you can you this login info:
+For user that has all grants you can use this login info:
 ```json
 {
     "email": "root@root.root",
