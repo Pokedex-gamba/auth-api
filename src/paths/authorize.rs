@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
 use actix_web::{
+    get,
     http::{header::AUTHORIZATION, StatusCode},
-    post,
     web::Data,
     HttpResponse, Responder,
 };
@@ -32,7 +32,7 @@ struct Row {
         ("jwt_public_token" = []),
     )
 )]
-#[post("/authorize")]
+#[get("/authorize")]
 pub async fn authorize(
     user_id: Option<UserId>,
     token_utils: Data<TokenUtils>,
