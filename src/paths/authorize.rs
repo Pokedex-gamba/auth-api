@@ -12,7 +12,7 @@ use sqlx::{query_as, types::Json, PgPool};
 use crate::{
     jwt_stuff::{TokenUtils, UserId},
     models::token::Token,
-    util::response_from_error,
+    util::response_from_error_with_injected_header,
 };
 
 #[derive(Deserialize)]
@@ -79,7 +79,10 @@ fn handle_response(
                     "Token with 'user_id: {}' exists, but user no longer exists",
                     *user_id
                 );
-                response_from_error("User doesn't exist".to_string(), StatusCode::NOT_FOUND)
+                response_from_error_with_injected_header(
+                    "User doesn't exist".to_string(),
+                    StatusCode::NOT_FOUND,
+                )
             }
             None => {
                 tracing::warn!("Grant 'role::public' doesn't exists -> guest user doesn't have any permissions");
@@ -90,11 +93,11 @@ fn handle_response(
                     .json(Token { token })
             }
         },
-        Err(sqlx::Error::Database(error)) => response_from_error(
+        Err(sqlx::Error::Database(error)) => response_from_error_with_injected_header(
             format!("unhandled error - {}", error),
             StatusCode::BAD_REQUEST,
         ),
-        Err(error) => response_from_error(
+        Err(error) => response_from_error_with_injected_header(
             format!("unhandled error - {}", error),
             StatusCode::INTERNAL_SERVER_ERROR,
         ),
