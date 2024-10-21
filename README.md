@@ -30,14 +30,17 @@ git clone https://github.com/Pokedex-gamba/auth-api.git
 Make sure decoding keys inside the container are mounted to public keys on your machine
 and encoding keys are mounted to private keys on your machine or set them in environment variables.
 
-If you are using the same commands as I used in generate RSA keys chapter, then you don't need to mess with key mountings and use commands bellow to link them.
+If you followed chapter `Generate RSA keys`, then your commands will look similar to the commands bellow.\
+Make sure the names of files to be linked and the link names are the same for keys to be linked correctly.
 
 ```sh
-# navigate to folder containing your keys
-ln -s ./grants_private_key.pem ./auth-api/grants_encoding_key
-ln -s ./grants_public_key.pem ./auth-api/grants_decoding_key
-ln -s ./public_token_private_key.pem ./auth-api/token_encoding_key
-ln -s ./public_token_public_key.pem ./auth-api/token_decoding_key
+# navigate from parent folder containing keys to folder containing this repo
+cd auth-api
+# correctly link keys
+ln -s ../grants_private_key.pem ./grants_encoding_key
+ln -s ../grants_public_key.pem ./grants_decoding_key
+ln -s ../public_token_private_key.pem ./token_encoding_key
+ln -s ../public_token_public_key.pem ./token_decoding_key
 ```
 
 Then just edit the `docker-compose.yaml` according to comments.
