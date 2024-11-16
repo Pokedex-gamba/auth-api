@@ -36,4 +36,16 @@ on conflict do nothing;
 call link_grants('svc::pokemon_gamba::all_routes',
                  array ['svc::pokemon_gamba::route::/pokemon/getRandomPokemon', 'svc::pokemon_gamba::route::/pokemon/getUserGamba']);
 
+-- Inventory API
+insert into grants (name)
+values ('svc::inventory_api::route::/pokemon/saveGamba'),
+       ('svc::inventory_api::route::/pokemon/changeOwner'),
+       ('svc::inventory_api::route::/pokemon/getInventory')
+on conflict do nothing;
+
+insert into grants (name)
+values ('svc::inventory_api::all_routes')
+on conflict do nothing;
+call link_grants('svc::inventory_api::all_routes',
+                 array ['svc::inventory_api::route::/pokemon/saveGamba', 'svc::inventory_api::route::/pokemon/changeOwner', 'svc::inventory_api::route::/pokemon/getInventory']);
 
