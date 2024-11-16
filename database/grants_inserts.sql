@@ -49,3 +49,14 @@ on conflict do nothing;
 call link_grants('svc::inventory_api::all_routes',
                  array ['svc::inventory_api::route::/pokemon/saveGamba', 'svc::inventory_api::route::/pokemon/changeOwner', 'svc::inventory_api::route::/pokemon/getInventory']);
 
+-- Trading API
+insert into grants (name)
+values ('svc::trading_api::route::/pokemon/trade'),
+       ('svc::trading_api::route::/pokemon/tradeHistory')
+on conflict do nothing;
+
+insert into grants (name)
+values ('svc::trading_api::all_routes')
+on conflict do nothing;
+call link_grants('svc::trading_api::all_routes',
+                 array ['svc::trading_api::route::/pokemon/trade', 'svc::trading_api::route::/pokemon/tradeHistory']);
