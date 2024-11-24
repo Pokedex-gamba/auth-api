@@ -60,3 +60,14 @@ values ('svc::trading_api::all_routes')
 on conflict do nothing;
 call link_grants('svc::trading_api::all_routes',
                  array ['svc::trading_api::route::/pokemon/trade', 'svc::trading_api::route::/pokemon/tradeHistory']);
+
+-- Leaderboards API
+insert into grants (name)
+values ('svc::leaderboards_api::route::/pokemon/getLeaderboards')
+on conflict do nothing;
+
+insert into grants (name)
+values ('svc::leaderboards_api::all_routes')
+on conflict do nothing;
+call link_grants('svc::leaderboards_api::all_routes',
+                 array ['svc::leaderboards_api::route::/pokemon/getLeaderboards']);
