@@ -71,3 +71,15 @@ values ('svc::leaderboards_api::all_routes')
 on conflict do nothing;
 call link_grants('svc::leaderboards_api::all_routes',
                  array ['svc::leaderboards_api::route::/pokemon/getLeaderboards']);
+
+-- Money manager API
+insert into grants (name)
+values ('svc::money_manager::route::/findUserWallet'),
+       ('svc::money_manager::route::/modifyBalance')
+on conflict do nothing;
+
+insert into grants (name)
+values ('svc::money_manager::all_routes')
+on conflict do nothing;
+call link_grants('svc::money_manager::all_routes',
+                 array ['svc::money_manager::route::/findUserWallet', 'svc::money_manager::route::/modifyBalance']);
