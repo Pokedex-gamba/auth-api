@@ -4,7 +4,8 @@ call link_grants('role::public', array ['svc::auth_api::route::/auth/register', 
 
 insert into grants (id, name)
 values ('60069534-615f-42ad-8ace-73bb7536850b', 'role::user');
---call link_grants('role::user', array []);
+call link_grants('role::user',
+                 array ['svc::pokemon_api::route::/pokemon/get_random', 'svc::pokemon_api::route::/pokemon/get_all', 'svc::pokemon_api::route::/pokemon/get_by_name', 'svc::auth_api::route::/auth/register', 'svc::auth_api::route::/auth/login', 'svc::pokemon_gamba::route::/pokemon/getRandomPokemon', 'svc::pokemon_gamba::route::/pokemon/getUserGamba', 'svc::inventory_api::route::/pokemon/saveGamba', 'svc::inventory_api::route::/pokemon/changeOwner', 'svc::inventory_api::route::/pokemon/getInventory', 'svc::trading_api::route::/pokemon/trade', 'svc::trading_api::route::/pokemon/tradeHistory', 'svc::leaderboards_api::route::/pokemon/getLeaderboards', 'svc::money_manager::route::/findUserWallet', 'svc::money_manager::route::/modifyBalance']);
 
 insert into grants (id, name)
 values ('9008cfed-dcb3-40dd-a800-9d60f63e11b5', 'role::gigachad')
