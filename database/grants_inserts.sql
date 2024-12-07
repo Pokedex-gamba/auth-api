@@ -87,11 +87,14 @@ call link_grants('svc::money_manager::all_routes',
 -- User info API
 insert into grants (name)
 values ('svc::user_info::route::/addUserInfo'),
-       ('svc::user_info::route::/findUserInfo')
+       ('svc::user_info::route::/findUserInfo'),
+       ('svc::user_info::route::/editUserInfo'),
+       ('svc::user_info::route::/findAllUserInfo'),
+       ('svc::user_info::route::/findUserInfoByUsername')
 on conflict do nothing;
 
 insert into grants (name)
 values ('svc::user_info::all_routes')
 on conflict do nothing;
 call link_grants('svc::user_info::all_routes',
-                 array ['svc::user_info::route::/addUserInfo', 'svc::user_info::route::/findUserInfo']);
+                 array ['svc::user_info::route::/addUserInfo', 'svc::user_info::route::/findUserInfo', 'svc::user_info::route::/editUserInfo', 'svc::user_info::route::/findAllUserInfo', 'svc::user_info::route::/findUserInfoByUsername']);
